@@ -97,18 +97,69 @@ int main(int argc, char const *argv[])
     }
     
     clear_window(renderer, config);
-    // SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255); // Set color to solid white
-    // SDL_RenderClear(renderer);
 
     while (chip8_instance.state != QUIT) {
         while (SDL_PollEvent(&event)) {
-            switch (event.type ) {
+            const Uint8* state = SDL_GetKeyboardState(NULL);
+            
+            switch (event.type) {
             case SDL_QUIT:
                 chip8_instance.state = QUIT;
                 printf("Quitting!\n");
                 break;
 
             case SDL_KEYDOWN:
+                if (state[SDL_SCANCODE_ESCAPE]) {
+                    chip8_instance.state = QUIT; 
+                }
+                else if (state[SDL_SCANCODE_1]) {
+
+                }
+                else if (state[SDL_SCANCODE_2]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_3]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_4]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_Q]) {
+
+                }
+                else if (state[SDL_SCANCODE_W]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_E]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_R]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_A]) {
+
+                }
+                else if (state[SDL_SCANCODE_S]) {
+
+                }
+                else if (state[SDL_SCANCODE_D]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_F]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_Z]) {
+                    printf("KEY PRESSED: y\n");
+                }
+                else if (state[SDL_SCANCODE_X]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_C]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_V]) {
+                    
+                }                                
                 printf("Key press detected\n");
                 break;
 
