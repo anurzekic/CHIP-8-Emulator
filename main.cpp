@@ -62,6 +62,35 @@ void init_config(configuration_t &config, uint8_t scale_factor, uint8_t r, uint8
     config.alpha = a;
 }
 
+void init_chip8(Chip8& instance, const char* filename) {
+    memset(instance.RAM, 0, sizeof(Chip8));
+
+    // Load font 
+    // memcpy(&instance->ram[0], FONT, sizeof(FONT)); // Put the chip8 instance on the heap
+       
+    FILE *file;
+    file = fopen(filename, "r+b"); // Ne treba write ? 
+    fread(&instance.RAM[0x200], sizeof(instance.RAM), 1, file);
+    instance.pc = 0x200;
+
+    // for(int i = 0; i < 4096; i++)
+    //     printf("%u ", instance.RAM[i]); // prints a series of bytes
+
+}
+
+void decode_instruction(Chip8& instance) {    
+    uint16_t opcode = instance.RAM[instance.pc] & 0xF000;
+    printf("INSTRUCTION %x\n", opcode);
+    // switch () // Most significant byte is stored first
+    // {
+    // case :
+    //     break;
+    
+    // default:
+    //     break;
+    // }
+}
+
 int main(int argc, char const *argv[])
 {
     (void)argc;
@@ -98,6 +127,9 @@ int main(int argc, char const *argv[])
     
     clear_window(renderer, config);
 
+    init_chip8(chip8_instance, argv[1]);
+    decode_instruction(chip8_instance);
+
     while (chip8_instance.state != QUIT) {
         while (SDL_PollEvent(&event)) {
             const Uint8* state = SDL_GetKeyboardState(NULL);
@@ -112,54 +144,6 @@ int main(int argc, char const *argv[])
                 if (state[SDL_SCANCODE_ESCAPE]) {
                     chip8_instance.state = QUIT; 
                 }
-                else if (state[SDL_SCANCODE_1]) {
-
-                }
-                else if (state[SDL_SCANCODE_2]) {
-                    
-                }
-                else if (state[SDL_SCANCODE_3]) {
-                    
-                }                
-                else if (state[SDL_SCANCODE_4]) {
-                    
-                }
-                else if (state[SDL_SCANCODE_Q]) {
-
-                }
-                else if (state[SDL_SCANCODE_W]) {
-                    
-                }
-                else if (state[SDL_SCANCODE_E]) {
-                    
-                }                
-                else if (state[SDL_SCANCODE_R]) {
-                    
-                }
-                else if (state[SDL_SCANCODE_A]) {
-
-                }
-                else if (state[SDL_SCANCODE_S]) {
-
-                }
-                else if (state[SDL_SCANCODE_D]) {
-                    
-                }                
-                else if (state[SDL_SCANCODE_F]) {
-                    
-                }
-                else if (state[SDL_SCANCODE_Z]) {
-                    printf("KEY PRESSED: y\n");
-                }
-                else if (state[SDL_SCANCODE_X]) {
-                    
-                }
-                else if (state[SDL_SCANCODE_C]) {
-                    
-                }                
-                else if (state[SDL_SCANCODE_V]) {
-                    
-                }                                
                 printf("Key press detected\n");
                 break;
 
@@ -173,6 +157,8 @@ int main(int argc, char const *argv[])
 
         }
         SDL_Delay(16); // Figure this shit out
+
+        // Emulate instructions here
 
         update_window(renderer);
     }
