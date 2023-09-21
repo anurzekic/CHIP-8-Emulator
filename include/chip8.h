@@ -54,6 +54,8 @@ class Chip8
     uint16_t pc;    // Program counter
     uint16_t stack[16];
 
+    uint16_t opcode;
+    
     // Decremented at a rate of 60Hz
     uint8_t  delay_timer; 
     uint8_t  sound_timer;
