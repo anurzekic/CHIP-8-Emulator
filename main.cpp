@@ -87,9 +87,9 @@ void fetch_instruction(Chip8& instance) {
     instance.pc += 2;
      
     // printf("PC: %d ", instance.pc);
-    // printf("INSTRUCTION %02x\n", instance.opcode);
-    // printf("OPCODES: %x\n", instance.opcode & 0xF000);
-    switch (instance.opcode & 0xF000) // Most significant byte is stored first
+    // printf("INSTRUCTION %x\n", instance.opcode);
+    printf("OPCODES: %x \n", (instance.opcode & 0xF000) >> 12);
+    switch ((instance.opcode & 0xF000) >> 12) // Most significant byte is stored first
     {
     case 0x0:
         if (instance.opcode == 0x00E0) {
@@ -101,8 +101,9 @@ void fetch_instruction(Chip8& instance) {
         break;
     
     case 0x1:
+        // printf("AAA\n");
         instance.pc = 0x0FFF & instance.opcode;
-        printf("Changed PC to: %d - %x\n", instance.pc, instance.pc);
+        // printf("Changed PC to: %d - %x\n", instance.pc, instance.pc);
         break;
     
     case 0x2:
