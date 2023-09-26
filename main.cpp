@@ -95,11 +95,11 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
     {
     case 0x0:
         if (instance.opcode == 0x00E0) {
-            printf("Clear screen!\n");
+            printf("Clear screen!\n\n");
             clear_window(renderer, config);
         }
         else if (instance.opcode == 0x00EE) {
-            printf("B\n");
+            printf("B\n\n");
         }
         break;
     
@@ -107,7 +107,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
         // printf("AAA\n");
         instance.pc = 0x0FFF & instance.opcode;
         // printf("OPCODES: %x \n", (instance.opcode & 0xF000) >> 12);
-        // printf("Changed PC to: %d - %x\n", instance.pc, instance.pc);
+        // printf("Changed PC to: %d - %x\n\n", instance.pc, instance.pc);
         break;
     
     case 0x2:
@@ -130,7 +130,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
         printf("Setting register: %x to %x\n", register_index, value);
     }
         // printf("Setting register: %x to %x\n", (instance.opcode & 0x0F00) >> 8, instance.opcode & 0x00FF);
-        printf("The current value at register: %x is: %x\n", (instance.opcode & 0x0F00) >> 8, instance.V[(instance.opcode & 0x0F00) >> 8]);
+        printf("The current value at register: %x is: %x\n\n", (instance.opcode & 0x0F00) >> 8, instance.V[(instance.opcode & 0x0F00) >> 8]);
         
         break;
     
@@ -141,7 +141,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
         instance.V[register_index] += value;
         printf("Adding value: %x to register: %x\n", value, register_index);
     }
-        printf("The current value at register: %x is: %x\n", (instance.opcode & 0x0F00) >> 8, instance.V[(instance.opcode & 0x0F00) >> 8]);
+        printf("The current value at register: %x is: %x\n\n", (instance.opcode & 0x0F00) >> 8, instance.V[(instance.opcode & 0x0F00) >> 8]);
         break;
     
     case 0x8:
@@ -151,6 +151,9 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
         break;  
 
     case 0xA:
+        printf("Setting the index register I to value: %x\n", instance.opcode & 0x0FFF);
+        instance.I = instance.opcode & 0x0FFF;
+        printf("Set the index register I to value: %x\n\n", instance.I);
         break;
 
     case 0xB:
