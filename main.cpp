@@ -63,7 +63,7 @@ void init_config(configuration_t &config, uint8_t scale_factor, uint8_t r, uint8
 }
 
 void init_chip8(Chip8& instance, const char* filename) {
-    memset(instance.RAM, 0, sizeof(Chip8));
+    memset(instance.RAM, 0, sizeof(instance.RAM)); // Da li treba ovdje Chip8 ili instance.RAM
 
     // Load font 
     memcpy(&instance.RAM[0], FONT, sizeof(FONT)); // Put the chip8 instance on the heap
@@ -73,27 +73,30 @@ void init_chip8(Chip8& instance, const char* filename) {
     fread(&instance.RAM[0x200], sizeof(instance.RAM), 1, file);
     instance.pc = 0x200;
 
+    memset(instance.V, 0, sizeof(instance.V));
+
     printf("PC: %d ", instance.pc);
 
-    // for(int i = 1; i < 4096; i+=2)
-    //     printf("%X", instance.RAM[i - 1] << 8 | instance.RAM[i]); // prints a series of bytes
-
+    for(int i = 1; i < 4096; i+=2)
+        printf("%X", instance.RAM[i - 1] << 8 | instance.RAM[i]); // prints a series of bytes
+    printf("\n\n");
 }
 
 
 
-void fetch_instruction(Chip8& instance) {    
+void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t &config) {    
     instance.opcode = instance.RAM[instance.pc] << 8 | instance.RAM[instance.pc + 1]; // & 0xF000;
     instance.pc += 2;
      
     // printf("PC: %d ", instance.pc);
     // printf("INSTRUCTION %x\n", instance.opcode);
-    printf("OPCODES: %x \n", (instance.opcode & 0xF000) >> 12);
+    // printf("OPCODES: %x \n", (instance.opcode & 0xF000) >> 12);
     switch ((instance.opcode & 0xF000) >> 12) // Most significant byte is stored first
     {
     case 0x0:
         if (instance.opcode == 0x00E0) {
-            printf("A\n");
+            printf("Clear screen!\n");
+            clear_window(renderer, config);
         }
         else if (instance.opcode == 0x00EE) {
             printf("B\n");
@@ -103,6 +106,7 @@ void fetch_instruction(Chip8& instance) {
     case 0x1:
         // printf("AAA\n");
         instance.pc = 0x0FFF & instance.opcode;
+        // printf("OPCODES: %x \n", (instance.opcode & 0xF000) >> 12);
         // printf("Changed PC to: %d - %x\n", instance.pc, instance.pc);
         break;
     
@@ -119,9 +123,25 @@ void fetch_instruction(Chip8& instance) {
         break;
     
     case 0x6:
+    {
+        uint8_t register_index = (instance.opcode & 0x0F00) >> 8;
+        uint8_t value = instance.opcode & 0x00FF; 
+        instance.V[register_index] = value;
+        printf("Setting register: %x to %x\n", register_index, value);
+    }
+        // printf("Setting register: %x to %x\n", (instance.opcode & 0x0F00) >> 8, instance.opcode & 0x00FF);
+        printf("The current value at register: %x is: %x\n", (instance.opcode & 0x0F00) >> 8, instance.V[(instance.opcode & 0x0F00) >> 8]);
+        
         break;
     
     case 0x7:
+    {
+        uint8_t register_index = (instance.opcode & 0x0F00) >> 8;
+        uint8_t value = instance.opcode & 0x00FF; 
+        instance.V[register_index] += value;
+        printf("Adding value: %x to register: %x\n", value, register_index);
+    }
+        printf("The current value at register: %x is: %x\n", (instance.opcode & 0x0F00) >> 8, instance.V[(instance.opcode & 0x0F00) >> 8]);
         break;
     
     case 0x8:
@@ -210,11 +230,11 @@ int main(int argc, char const *argv[])
                 if (state[SDL_SCANCODE_ESCAPE]) {
                     chip8_instance.state = QUIT; 
                 }
-                printf("Key press detected\n");
+                // printf("Key press detected\n");
                 break;
 
             case SDL_KEYUP:
-                printf("Key release detected\n");
+                // printf("Key release detected\n");
                 break;
 
             default:
@@ -225,7 +245,7 @@ int main(int argc, char const *argv[])
         SDL_Delay(16); // Figure this shit out
 
         // Fetch instructions here
-        fetch_instruction(chip8_instance);
+        fetch_instruction(chip8_instance, renderer, config);
 
         update_window(renderer);
     }
