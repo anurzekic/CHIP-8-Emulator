@@ -66,7 +66,7 @@ void init_chip8(Chip8& instance, const char* filename) {
     memset(instance.RAM, 0, sizeof(instance.RAM)); // Da li treba ovdje Chip8 ili instance.RAM
 
     // Load font 
-    memcpy(&instance.RAM[0], FONT, sizeof(FONT)); // Put the chip8 instance on the heap
+    memcpy(&instance.RAM[0], FONT, sizeof(FONT)); // Put the chip8 font in memory
        
     FILE *file;
     file = fopen(filename, "r+b"); // Ne treba write ? 
@@ -153,7 +153,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
     case 0xA:
         printf("Setting the index register I to value: %x\n", instance.opcode & 0x0FFF);
         instance.I = instance.opcode & 0x0FFF;
-        printf("Set the index register I to value: %x\n\n", instance.I);
+        printf("Set the index register I to value: %x in decimal: %d\n\n", instance.I, instance.I);
         break;
 
     case 0xB:
@@ -163,6 +163,39 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
         break;  
 
     case 0xD:
+    {
+        uint8_t x = instance.V[(instance.opcode & 0x0F00) >> 8] % 64; // The scaling factor should be used here in some way
+        uint8_t y = instance.V[(instance.opcode & 0x00F0) >> 4] % 32; // Here as well
+
+        instance.V[0xF] = 0;
+
+        printf("Drawing starting from x: %d and y: %d\n", x, y);
+        
+        uint8_t sprite_height = instance.opcode & 0x000F;
+        
+        printf("Sprite height is: %d and hex: %x\n", sprite_height, sprite_height);
+        printf("Index I is: %x and in decimal: %d\n\n", instance.I, instance.I);
+
+        for(size_t i = instance.I; i < instance.I + sprite_height; i++) {
+            printf("\nNext row!\n");
+            printf("Value at I in RAM is: %x and decimal %d\n\n", instance.RAM[i], instance.RAM[i]);
+            
+            uint8_t x_for_current_row = x;
+
+            for(int shift_by = 8; shift_by > 0; shift_by--) {
+                bool is_bit_set = (instance.RAM[i] >> (shift_by - 1)) & 0x1;
+                printf("BIT %d is set to %d\n", shift_by, is_bit_set);
+
+                // uint8_t r;
+                // uint8_t g; 
+                // uint8_t b;
+
+                // SDL_GetRGB()
+                // if(is_bit_set && )
+                x_for_current_row++;
+            }
+        }
+    }
         break;
 
     case 0xE:
@@ -192,7 +225,8 @@ int main(int argc, char const *argv[])
     configuration_t config;
     SDL_Event event;
 
-    init_config(config, 10, 0, 0, 255, 255);
+    // Adjust scale factor later (change 1 to 10)
+    init_config(config, 10, 0, 0, 0, 255);
     
     if (!init_SDL())
         exit(EXIT_FAILURE);
