@@ -84,7 +84,7 @@ void init_chip8(Chip8& instance, const char* filename) {
 
 
 
-void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t &config) {    
+void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]SDL_Window *window, configuration_t &config) {    
     instance.opcode = instance.RAM[instance.pc] << 8 | instance.RAM[instance.pc + 1]; // & 0xF000;
     instance.pc += 2;
      
@@ -185,15 +185,31 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, configuration_t 
             for(int shift_by = 8; shift_by > 0; shift_by--) {
                 bool is_bit_set = (instance.RAM[i] >> (shift_by - 1)) & 0x1;
                 printf("BIT %d is set to %d\n", shift_by, is_bit_set);
+                // printf("X: %u, Y: %u\n", x, y);
 
-                // uint8_t r;
-                // uint8_t g; 
-                // uint8_t b;
+                // SDL_Rect pixel;
+                // pixel.x = x_for_current_row;
+                // pixel.y = y;
+                // pixel.w = 1;
+                // pixel.h = 1;
 
-                // SDL_GetRGB()
-                // if(is_bit_set && )
+                // uint8_t pixels[10];
+                // uint8_t* pixels[10];
+                // void* pixels;
+
+                // SDL_Surface* surface = SDL_GetWindowSurface(window);
+                // if (!SDL_RenderReadPixels(renderer, &pixel, SDL_GetWindowPixelFormat(window), &pixels, surface->pitch)) {
+                //     SDL_Log("Unable to create window: %s\n", SDL_GetError());
+                //     // return false;
+                //     exit(EXIT_FAILURE);
+                // }
+                // Uint32* upixels = (Uint32*) pixels;
+                // printf("%n\n", upixels);
+                // Should stop if the right edge of the screen has been reached
                 x_for_current_row++;
             }
+            // Should stop if bottom edge of the screen has been reached
+            y++;
         }
     }
         break;
@@ -227,7 +243,6 @@ int main(int argc, char const *argv[])
 
     // Adjust scale factor later (change 1 to 10)
     init_config(config, 10, 0, 0, 0, 255);
-    
     if (!init_SDL())
         exit(EXIT_FAILURE);
 
@@ -247,12 +262,15 @@ int main(int argc, char const *argv[])
         SDL_Log("Unable to create renderer: %s\n", SDL_GetError());
         return false;
     }
+
+    // Figure out how to use this
+    SDL_RenderSetScale(renderer, 10, 10); // Sets the scaling of the pixels
     
     clear_window(renderer, config);
 
     init_chip8(chip8_instance, argv[1]);
     // decode_instruction(chip8_instance);
-
+    // int i = 0;
     while (chip8_instance.state != QUIT) {
         while (SDL_PollEvent(&event)) {
             const Uint8* state = SDL_GetKeyboardState(NULL);
@@ -268,6 +286,9 @@ int main(int argc, char const *argv[])
                     chip8_instance.state = QUIT; 
                 }
                 // printf("Key press detected\n");
+                // SDL_SetRenderDrawColor( renderer, 100, 255, 255, 255 );
+                // SDL_RenderDrawPoint( renderer, i, 0);
+                // i++;
                 break;
 
             case SDL_KEYUP:
@@ -279,10 +300,10 @@ int main(int argc, char const *argv[])
             }
 
         }
-        SDL_Delay(16); // Figure this shit out
+        SDL_Delay(16); // Figure out how the instructions should be delayed
 
         // Fetch instructions here
-        fetch_instruction(chip8_instance, renderer, config);
+        fetch_instruction(chip8_instance, renderer, window, config);
 
         update_window(renderer);
     }
