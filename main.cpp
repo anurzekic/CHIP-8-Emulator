@@ -68,6 +68,9 @@ void init_chip8(Chip8& instance, const char* filename) {
     // Load font 
     memcpy(&instance.RAM[0], FONT, sizeof(FONT)); // Put the chip8 font in memory
        
+    // Set the screen to 0
+    memset(&instance.display, 0, sizeof(instance.display));
+
     FILE *file;
     file = fopen(filename, "r+b"); // Ne treba write ? 
     fread(&instance.RAM[0x200], sizeof(instance.RAM), 1, file);
@@ -183,28 +186,20 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
             uint8_t x_for_current_row = x;
 
             for(int shift_by = 8; shift_by > 0; shift_by--) {
-                bool is_bit_set = (instance.RAM[i] >> (shift_by - 1)) & 0x1;
-                printf("BIT %d is set to %d\n", shift_by, is_bit_set);
-                // printf("X: %u, Y: %u\n", x, y);
+                bool x_bit_value = (instance.RAM[i] >> (shift_by - 1)) & 0x1;
+                printf("BIT %d is set to %d\n", shift_by, x_bit_value);
+                printf("X: %u, Y: %u\n", x_for_current_row, y);
 
-                // SDL_Rect pixel;
-                // pixel.x = x_for_current_row;
-                // pixel.y = y;
-                // pixel.w = 1;
-                // pixel.h = 1;
+                if (x_bit_value && instance.display[y][x_for_current_row]) {
+                    instance.display[y][x_for_current_row] = 0;
+                    instance.V[0xF] = 1;
+                }
+                else if(x_bit_value && !instance.display[y][x_for_current_row]) {
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                    SDL_RenderDrawPoint(renderer, x_for_current_row, y);
+                    instance.display[y][x_for_current_row] = 1;
+                }
 
-                // uint8_t pixels[10];
-                // uint8_t* pixels[10];
-                // void* pixels;
-
-                // SDL_Surface* surface = SDL_GetWindowSurface(window);
-                // if (!SDL_RenderReadPixels(renderer, &pixel, SDL_GetWindowPixelFormat(window), &pixels, surface->pitch)) {
-                //     SDL_Log("Unable to create window: %s\n", SDL_GetError());
-                //     // return false;
-                //     exit(EXIT_FAILURE);
-                // }
-                // Uint32* upixels = (Uint32*) pixels;
-                // printf("%n\n", upixels);
                 // Should stop if the right edge of the screen has been reached
                 x_for_current_row++;
             }

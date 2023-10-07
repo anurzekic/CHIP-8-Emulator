@@ -60,7 +60,8 @@ class Chip8
     uint8_t  delay_timer; 
     uint8_t  sound_timer;
 
-    uint8_t  screen_size[32][64];
+    //                Y   X
+    uint8_t  display[32][64];
 
     chip8_state_t state;
   // public:
