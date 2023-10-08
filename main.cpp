@@ -103,43 +103,50 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
             clear_window(renderer, config);
         }
         else if (instance.opcode == 0x00EE) {
-            printf("IMPLEMENT\n\n");
-
-            int i = 0;
-            for(; instance.stack[i]; i++) 
-            {
-                printf("BBB\n");
-            }
-            instance.pc = instance.stack[i];
+            instance.pc = instance.stack.top();
+            instance.stack.pop();
         }
         break;
     
     case 0x1:
-        // printf("AAA\n");
         instance.pc = 0x0FFF & instance.opcode;
         // printf("OPCODES: %x \n", (instance.opcode & 0xF000) >> 12);
         // printf("Changed PC to: %d - %x\n\n", instance.pc, instance.pc);
         break;
     
     case 0x2:
-    {        
-        int i = 0;
-        for(; instance.stack[i]; i++) 
-        {
-            printf("AAA\n");
-        }
-        instance.stack[i] = instance.pc;
-        printf("SET STACK VALUE AT I: %d TO: %x\n", i, instance.stack[i]);
-    }
+        instance.stack.push(instance.pc);
+        instance.pc = 0x0FFF & instance.opcode;
         break;
     
     case 0x3:
+    {
+        uint8_t register_index = (instance.opcode & 0x0F00) >> 8;
+        uint8_t nn_value = instance.opcode & 0x00FF;
+        if (instance.V[register_index] == nn_value) {
+            instance.pc += 2;
+        }
+    }
         break;
     
     case 0x4:
+    {
+        uint8_t register_index = (instance.opcode & 0x0F00) >> 8;
+        uint8_t nn_value = instance.opcode & 0x00FF;
+        if (instance.V[register_index] != nn_value) {
+            instance.pc += 2;
+        }
+    }
         break;
     
     case 0x5:
+    {
+        uint8_t register_index_first = (instance.opcode & 0x0F00) >> 8;
+        uint8_t register_index_second = (instance.opcode & 0x00F0) >> 4;
+        if (instance.V[register_index_first] == instance.V[register_index_second]) {
+            instance.pc += 2;
+        }
+    }
         break;
     
     case 0x6:
@@ -168,6 +175,13 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;
     
     case 0x9:
+    {
+        uint8_t register_index_first = (instance.opcode & 0x0F00) >> 8;
+        uint8_t register_index_second = (instance.opcode & 0x00F0) >> 4;
+        if (instance.V[register_index_first] != instance.V[register_index_second]) {
+            instance.pc += 2;
+        }
+    }
         break;  
 
     case 0xA:

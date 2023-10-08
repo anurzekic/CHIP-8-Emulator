@@ -2,7 +2,7 @@
 #define CHIP8
 
 #include <stdint.h>
-#include <array>
+#include <stack>
 
 #define DISPLAY_WIDTH  64 // CHIP-8 default width
 #define DISPLAY_HEIGHT 32 // CHIP-8 default width
@@ -54,7 +54,8 @@ class Chip8
     uint8_t  sp;    // Stack pointer
     uint16_t pc;    // Program counter
     // std::array<uint16_t, 16> stack;
-    uint16_t stack[16];
+    // uint16_t stack[16];
+    std::stack<uint16_t> stack;
 
     uint16_t opcode;
     
