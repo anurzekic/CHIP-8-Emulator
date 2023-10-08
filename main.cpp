@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "./include/chip8.h"
 #include <assert.h>
+#include <cstdlib>
 
 bool init_SDL() { //, SDL_Window *window, SDL_Renderer *renderer) {
     if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0) { 
@@ -293,10 +294,13 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;
 
     case 0xB:
+        // TODO Make configurable
+        instance.pc = (instance.opcode & 0x0FFF) + instance.V[0x0];
         break;  
     
     case 0xC:
-        break;  
+        instance.V[get_VX(instance.opcode)] = (rand() % 256) & (instance.opcode & 0x00FF);
+        break;
 
     case 0xD:
     {
@@ -352,6 +356,47 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;  
 
     case 0xF:
+    switch (instance.opcode & 0x00FF) 
+    {
+    case 0x07:
+
+        break;
+
+    case 0x0A:
+
+        break;
+
+    case 0x15:
+    
+        break;
+
+    case 0x18:
+    
+        break;
+
+    case 0x1E:
+        // TODO Add overflow check
+        instance.I = instance.V[(instance.opcode & 0x0F00) >> 8];
+        break;
+
+    case 0x29:
+
+        break;
+
+    case 0x33:
+
+        break;
+
+    case 0x55:
+
+        break;
+        
+    case 0x65:
+
+        break;
+        
+    // TODO Imeplement Super Chip-48 Instructions
+    }
         break;  
 
     default:
