@@ -12,8 +12,8 @@ bool init_SDL() { //, SDL_Window *window, SDL_Renderer *renderer) {
 
     // window = SDL_CreateWindow("CHIP-8 Emulator", 
     //                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-    //                         DEFAULT_WIDTH * config.window_scale_factor, 
-    //                         DEFAULT_HEIGHT * config.window_scale_factor, 0); // TODO Add resizable flag later
+    //                         DISPLAY_WIDTH * config.window_scale_factor, 
+    //                         DISPLAY_HEIGHT * config.window_scale_factor, 0); // TODO Add resizable flag later
  
     // if (!window) {
     //     SDL_Log("Unable to create window: %s\n", SDL_GetError());
@@ -63,7 +63,10 @@ void init_config(configuration_t &config, uint8_t scale_factor, uint8_t r, uint8
 }
 
 void init_chip8(Chip8& instance, const char* filename) {
-    memset(instance.RAM, 0, sizeof(instance.RAM)); // Da li treba ovdje Chip8 ili instance.RAM
+    memset(instance.RAM, 0, sizeof(instance.RAM));
+
+    // Set all registers to null
+    memset(instance.V, 0, sizeof(instance.V));
 
     // Load font 
     memcpy(&instance.RAM[0], FONT, sizeof(FONT)); // Put the chip8 font in memory
@@ -85,8 +88,6 @@ void init_chip8(Chip8& instance, const char* filename) {
     printf("\n\n");
 }
 
-
-
 void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]SDL_Window *window, configuration_t &config) {    
     instance.opcode = instance.RAM[instance.pc] << 8 | instance.RAM[instance.pc + 1]; // & 0xF000;
     instance.pc += 2;
@@ -102,7 +103,14 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
             clear_window(renderer, config);
         }
         else if (instance.opcode == 0x00EE) {
-            printf("B\n\n");
+            printf("IMPLEMENT\n\n");
+
+            int i = 0;
+            for(; instance.stack[i]; i++) 
+            {
+                printf("BBB\n");
+            }
+            instance.pc = instance.stack[i];
         }
         break;
     
@@ -114,6 +122,15 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;
     
     case 0x2:
+    {        
+        int i = 0;
+        for(; instance.stack[i]; i++) 
+        {
+            printf("AAA\n");
+        }
+        instance.stack[i] = instance.pc;
+        printf("SET STACK VALUE AT I: %d TO: %x\n", i, instance.stack[i]);
+    }
         break;
     
     case 0x3:
@@ -180,15 +197,21 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         printf("Index I is: %x and in decimal: %d\n\n", instance.I, instance.I);
 
         for(size_t i = instance.I; i < instance.I + sprite_height; i++) {
-            printf("\nNext row!\n");
-            printf("Value at I in RAM is: %x and decimal %d\n\n", instance.RAM[i], instance.RAM[i]);
+            // printf("\nNext row!\n");
+            if (y == DISPLAY_HEIGHT)
+                break;
+
+            // printf("Value at I in RAM is: %x and decimal %d\n\n", instance.RAM[i], instance.RAM[i]);
             
             uint8_t x_for_current_row = x;
 
             for(int shift_by = 8; shift_by > 0; shift_by--) {
+                if (x_for_current_row == DISPLAY_WIDTH) 
+                    break;
+
                 bool x_bit_value = (instance.RAM[i] >> (shift_by - 1)) & 0x1;
-                printf("BIT %d is set to %d\n", shift_by, x_bit_value);
-                printf("X: %u, Y: %u\n", x_for_current_row, y);
+                // printf("BIT %d is set to %d\n", shift_by, x_bit_value);
+                // printf("X: %u, Y: %u\n", x_for_current_row, y);
 
                 if (x_bit_value && instance.display[y][x_for_current_row]) {
                     instance.display[y][x_for_current_row] = 0;
@@ -243,8 +266,8 @@ int main(int argc, char const *argv[])
 
     window = SDL_CreateWindow("CHIP-8 Emulator", 
                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-                        DEFAULT_WIDTH * config.window_scale_factor, 
-                        DEFAULT_HEIGHT * config.window_scale_factor, 0); // TODO Add resizable flag later
+                        DISPLAY_WIDTH * config.window_scale_factor, 
+                        DISPLAY_HEIGHT * config.window_scale_factor, 0); // TODO Add resizable flag later
 
     if (!window) {
         SDL_Log("Unable to create window: %s\n", SDL_GetError());

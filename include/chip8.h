@@ -2,9 +2,10 @@
 #define CHIP8
 
 #include <stdint.h>
+#include <array>
 
-#define DEFAULT_WIDTH  64 // CHIP-8 default width
-#define DEFAULT_HEIGHT 32 // CHIP-8 default width
+#define DISPLAY_WIDTH  64 // CHIP-8 default width
+#define DISPLAY_HEIGHT 32 // CHIP-8 default width
 
 const static uint8_t FONT[80] = {
   0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -52,6 +53,7 @@ class Chip8
     
     uint8_t  sp;    // Stack pointer
     uint16_t pc;    // Program counter
+    // std::array<uint16_t, 16> stack;
     uint16_t stack[16];
 
     uint16_t opcode;
