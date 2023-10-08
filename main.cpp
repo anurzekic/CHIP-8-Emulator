@@ -88,6 +88,14 @@ void init_chip8(Chip8& instance, const char* filename) {
     printf("\n\n");
 }
 
+uint8_t get_VX(uint16_t opcode) {
+    return (opcode & 0x0F00) >> 8;
+}
+
+uint8_t get_VY(uint16_t opcode) {
+    return (opcode & 0x00F0) >> 4;
+}
+
 void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]SDL_Window *window, configuration_t &config) {    
     instance.opcode = instance.RAM[instance.pc] << 8 | instance.RAM[instance.pc + 1]; // & 0xF000;
     instance.pc += 2;
@@ -172,6 +180,100 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;
     
     case 0x8:
+        switch(instance.opcode & 0x000F)
+        {
+        case 0x0:
+        {
+            // VX is set to the value of VY
+            instance.V[get_VX(instance.opcode)] = instance.V[get_VY(instance.opcode)];
+        }
+            break;
+
+        case 0x1:
+        {
+            uint8_t VX = get_VX(instance.opcode);
+            uint8_t VY = get_VY(instance.opcode);
+            instance.V[VX] = instance.V[VX] | instance.V[VY];
+        }
+            break;
+
+        case 0x2:
+        {    
+            uint8_t VX = get_VX(instance.opcode);
+            uint8_t VY = get_VY(instance.opcode);
+            instance.V[VX] = instance.V[VX] & instance.V[VY];
+        }
+            break;
+
+        case 0x3:
+        {
+            uint8_t VX = get_VX(instance.opcode);
+            uint8_t VY = get_VY(instance.opcode);
+            instance.V[VX] = instance.V[VX] ^ instance.V[VY];
+        }
+            break;
+        
+        case 0x4:
+        {
+            uint8_t VX = get_VX(instance.opcode);
+            uint8_t VY = get_VY(instance.opcode);
+
+            if(((uint16_t)instance.V[VX] + (uint16_t)instance.V[VY]) > 255) {
+                instance.V[0xF] = 0x1;
+            }
+            else {
+                instance.V[0xF] = 0x0;
+            }
+
+            instance.V[VX] = instance.V[VX] + instance.V[VY];
+        }
+            break;
+
+        case 0x5:
+        {
+            uint8_t VX = get_VX(instance.opcode);
+            uint8_t VY = get_VY(instance.opcode);
+            if (instance.V[VX] > instance.V[VY]) {
+                instance.V[0xF] = 0x1;
+            }
+            else {
+                instance.V[0xF] = 0x0;
+            }
+            instance.V[VX] = instance.V[VX] - instance.V[VY];
+        }
+            break;
+
+        case 0x6:
+        {
+            uint8_t VX = get_VX(instance.opcode);
+            instance.V[0xF] = instance.V[VX] & 0x1;
+            instance.V[VX] = instance.V[VX] >> 1;
+        }
+            break;
+
+        case 0x7:
+        {
+            uint8_t VX = get_VX(instance.opcode);
+            uint8_t VY = get_VY(instance.opcode);
+            
+            if (instance.V[VY] > instance.V[VX]) {
+                instance.V[0xF] = 0x1;
+            }
+            else {
+                instance.V[0xF] = 0x0;
+            }
+            instance.V[VX] = instance.V[VY] - instance.V[VX];
+        }
+            break;
+
+        case 0xE:
+        {
+            uint8_t VX = get_VX(instance.opcode);
+            instance.V[0xF] = (instance.V[VX] & 0x8000) >> 15;
+            instance.V[VX] = instance.V[VX] << 1;
+        }
+            break;               
+        }
         break;
     
     case 0x9:
