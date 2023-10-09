@@ -362,7 +362,16 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
     }
         break;
 
+    // TODO
     case 0xE:
+        switch(instance.opcode & 0xFF)
+        {
+            case 0x9E:
+                break;
+
+            case 0xA1:
+                break;                
+        }
         break;  
 
     case 0xF:
@@ -372,6 +381,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         instance.V[get_VX(instance.opcode)] = instance.delay_timer;
         break;
 
+    // TODO
     case 0x0A:
 
         break;
@@ -399,7 +409,14 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;
 
     case 0x33:
-
+    {
+        uint8_t value = instance.V[get_VX(instance.opcode)];
+        printf("Decimal conversion instruction HEX: %x | DECIMAL: %u | \n", value, value);
+        instance.RAM[instance.I] = (value / 100) % 10;
+        instance.RAM[instance.I + 1] = (value / 10) % 10;
+        instance.RAM[instance.I + 2] = value % 10;
+        printf("F: %u | S: %u | T: %u\n", instance.RAM[instance.I], instance.RAM[instance.I + 1], instance.RAM[instance.I + 2]);
+    }
         break;
 
     case 0x55:
