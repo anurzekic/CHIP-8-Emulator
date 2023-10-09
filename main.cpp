@@ -341,6 +341,8 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 // printf("X: %u, Y: %u\n", x_for_current_row, y);
 
                 if (x_bit_value && instance.display[y][x_for_current_row]) {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                    SDL_RenderDrawPoint(renderer, x_for_current_row, y);
                     instance.display[y][x_for_current_row] = 0;
                     instance.V[0xF] = 1;
                 }
@@ -367,7 +369,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
     switch (instance.opcode & 0x00FF) 
     {
     case 0x07:
-
+        instance.V[get_VX(instance.opcode)] = instance.delay_timer;
         break;
 
     case 0x0A:
@@ -375,20 +377,25 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;
 
     case 0x15:
-    
+        instance.delay_timer = instance.V[get_VX(instance.opcode)];
         break;
 
     case 0x18:
-    
+        instance.sound_timer = instance.V[get_VX(instance.opcode)];
         break;
 
     case 0x1E:
         // TODO Add overflow check
-        instance.I = instance.V[(instance.opcode & 0x0F00) >> 8];
+        instance.I += instance.V[get_VX(instance.opcode)];
         break;
 
     case 0x29:
-
+    {
+        // Multiply by 5 since every character is 5 bytes long
+        uint8_t font_index = instance.V[get_VX(instance.opcode)] * 5;
+        instance.I = instance.RAM[font_index];
+        // printf("FONT INDEX: %u AND I: %x\n", font_index, instance.I);
+    }
         break;
 
     case 0x33:
@@ -396,11 +403,17 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         break;
 
     case 0x55:
-
+        // TODO Implement other behaviour for older CHIP8 games
+        for(uint8_t i = 0x0; i <= get_VX(instance.opcode); i++) {
+            instance.RAM[instance.I + i] = instance.V[i]; 
+        }
         break;
         
     case 0x65:
-
+        // TODO Implement other behaviour for older CHIP8 games
+        for(uint8_t i = 0x0; i <= get_VX(instance.opcode); i++) {
+            instance.V[i] = instance.RAM[instance.I + i]; 
+        }
         break;
         
     // TODO Imeplement Super Chip-48 Instructions
