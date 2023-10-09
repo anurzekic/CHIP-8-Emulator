@@ -59,10 +59,18 @@ class Chip8
 
     uint16_t opcode;
     
+    // Insturctions per second
+    uint16_t instr_per_sec;
+    
     // Decremented at a rate of 60Hz
     uint8_t  delay_timer; 
     uint8_t  sound_timer;
 
+    // Draw when the flag is set
+    bool draw;
+
+    uint16_t keypad[16];
+    
     //                Y   X
     uint8_t  display[32][64];
 

@@ -64,7 +64,13 @@ void init_config(configuration_t &config, uint8_t scale_factor, uint8_t r, uint8
 }
 
 void init_chip8(Chip8& instance, const char* filename) {
+    // Zero out the RAM
     memset(instance.RAM, 0, sizeof(instance.RAM));
+
+    instance.sound_timer = 0;
+    instance.delay_timer = 0;
+
+    instance.draw = false;
 
     // Set all registers to null
     memset(instance.V, 0, sizeof(instance.V));
@@ -110,6 +116,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         if (instance.opcode == 0x00E0) {
             printf("Clear screen!\n\n");
             clear_window(renderer, config);
+            instance.draw = true;
         }
         else if (instance.opcode == 0x00EE) {
             instance.pc = instance.stack.top();
@@ -349,6 +356,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
             // Should stop if bottom edge of the screen has been reached
             y++;
         }
+        instance.draw = true;
     }
         break;
 
@@ -448,6 +456,8 @@ int main(int argc, char const *argv[])
     clear_window(renderer, config);
 
     init_chip8(chip8_instance, argv[1]);
+    chip8_instance.instr_per_sec = 700;
+
     // decode_instruction(chip8_instance);
     // int i = 0;
     while (chip8_instance.state != QUIT) {
@@ -465,8 +475,6 @@ int main(int argc, char const *argv[])
                     chip8_instance.state = QUIT; 
                 }
                 // printf("Key press detected\n");
-                // SDL_SetRenderDrawColor( renderer, 100, 255, 255, 255 );
-                // SDL_RenderDrawPoint( renderer, i, 0);
                 // i++;
                 break;
 
@@ -479,12 +487,33 @@ int main(int argc, char const *argv[])
             }
 
         }
-        SDL_Delay(16); // Figure out how the instructions should be delayed
+        // SDL_Delay(16); // Figure out how the instructions should be delayed
 
-        // Fetch instructions here
-        fetch_instruction(chip8_instance, renderer, window, config);
+        uint64_t start_frame = SDL_GetPerformanceCounter();
 
-        update_window(renderer);
+        // Fetch instructions here for one frame 60Hz
+        for (uint32_t i = 0; i < chip8_instance.instr_per_sec / 60; i++) {
+            fetch_instruction(chip8_instance, renderer, window, config);
+        }
+
+        uint64_t end_frame = SDL_GetPerformanceCounter();
+
+        // Time elapsed in ms
+        double time_elapsed = ((double)(end_frame - start_frame) * 1000) / SDL_GetPerformanceFrequency();
+
+        SDL_Delay(time_elapsed > 16.666f ? 0 : 16.666f - time_elapsed);
+
+        if (chip8_instance.draw) {
+            update_window(renderer);
+            chip8_instance.draw = false;
+        }
+
+        // Make function update timers
+        if(chip8_instance.delay_timer > 0)
+            chip8_instance.delay_timer--;
+        
+        if(chip8_instance.sound_timer > 0)
+            chip8_instance.sound_timer--;
     }
 
     // SDL_Delay(3000); // For testing purposes
