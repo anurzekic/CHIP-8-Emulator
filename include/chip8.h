@@ -53,8 +53,7 @@ class Chip8
     
     uint8_t  sp;    // Stack pointer
     uint16_t pc;    // Program counter
-    // std::array<uint16_t, 16> stack;
-    // uint16_t stack[16];
+    
     std::stack<uint16_t> stack;
 
     uint16_t opcode;
@@ -69,7 +68,7 @@ class Chip8
     // Draw when the flag is set
     bool draw;
 
-    uint16_t keypad[16];
+    uint8_t keypad[16];
     
     //                Y   X
     uint8_t  display[32][64];
