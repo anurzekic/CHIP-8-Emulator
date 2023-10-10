@@ -397,7 +397,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                     instance.V[get_VX(instance.opcode)] = instance.delay_timer;
                     break;
 
-                // TODO
+                // TODO Implement "Get key" instruction
                 case 0x0A:
 
                     break;
@@ -479,6 +479,14 @@ void handle_input(Chip8& instance, SDL_Event& event) {
                 if (state[SDL_SCANCODE_ESCAPE]) {
                     instance.state = QUIT; 
                 }
+                else if (state[SDL_SCANCODE_SPACE]) {
+                    if (instance.state == PAUSED) {
+                        instance.state = RUNNING;
+                    } 
+                    else {
+                        instance.state = PAUSED;
+                    }
+                }
                 // printf("Key press detected\n");
                 break;
 
@@ -491,6 +499,14 @@ void handle_input(Chip8& instance, SDL_Event& event) {
         }
     }
 
+}
+
+void update_timers(Chip8& instance) {
+    if (instance.delay_timer > 0)
+        instance.delay_timer--;
+    
+    if (instance.sound_timer > 0)
+        instance.sound_timer--;
 }
 
 int main(int argc, char const *argv[])
@@ -540,6 +556,9 @@ int main(int argc, char const *argv[])
     while (chip8_instance.state != QUIT) {
         handle_input(chip8_instance, event);
 
+        if (chip8_instance.state == PAUSED)
+            continue;
+
         uint64_t start_frame = SDL_GetPerformanceCounter();
 
         // Fetch instructions here for one frame 60Hz
@@ -559,12 +578,7 @@ int main(int argc, char const *argv[])
             chip8_instance.draw = false;
         }
 
-        // Make function update timers
-        if(chip8_instance.delay_timer > 0)
-            chip8_instance.delay_timer--;
-        
-        if(chip8_instance.sound_timer > 0)
-            chip8_instance.sound_timer--;
+        update_timers(chip8_instance);
     }
 
     // SDL_Delay(3000); // For testing purposes
