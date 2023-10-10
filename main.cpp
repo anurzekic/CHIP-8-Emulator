@@ -487,11 +487,122 @@ void handle_input(Chip8& instance, SDL_Event& event) {
                         instance.state = PAUSED;
                     }
                 }
+                else if (state[SDL_SCANCODE_1]) {
+
+                }
+                else if (state[SDL_SCANCODE_2]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_3]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_4]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_Q]) {
+
+                }
+                else if (state[SDL_SCANCODE_W]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_E]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_R]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_A]) {
+
+                }
+                else if (state[SDL_SCANCODE_S]) {
+
+                }
+                else if (state[SDL_SCANCODE_D]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_F]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_Z]) {
+                    printf("PRESSED Y!\n");
+                }
+                else if (state[SDL_SCANCODE_X]) {
+                    
+                }
+                else if (state[SDL_SCANCODE_C]) {
+                    
+                }                
+                else if (state[SDL_SCANCODE_V]) {
+                    
+                }         
                 // printf("Key press detected\n");
                 break;
 
             case SDL_KEYUP:
-                // printf("Key relesase detected\n");
+                printf("Key relesase detected\n");
+                if (!state[SDL_SCANCODE_1]) {
+
+                }
+                
+                if (!state[SDL_SCANCODE_2]) {
+                    
+                }
+                
+                if (!state[SDL_SCANCODE_3]) {
+                    
+                }                
+                
+                if (!state[SDL_SCANCODE_4]) {
+                    
+                }
+                
+                if (!state[SDL_SCANCODE_Q]) {
+
+                }
+                
+                if (!state[SDL_SCANCODE_W]) {
+                    
+                }
+                
+                if (!state[SDL_SCANCODE_E]) {
+                    
+                }                
+                
+                if (!state[SDL_SCANCODE_R]) {
+                    
+                }
+                
+                if (!state[SDL_SCANCODE_A]) {
+
+                }
+                
+                if (!state[SDL_SCANCODE_S]) {
+
+                }
+                
+                if (!state[SDL_SCANCODE_D]) {
+                    
+                }                
+                
+                if (!state[SDL_SCANCODE_F]) {
+                    
+                }
+                
+                if (!state[SDL_SCANCODE_Z]) {
+                    printf("RELEASED Y\n");
+                }
+                
+                if (!state[SDL_SCANCODE_X]) {
+                    // printf("RELEASED X\n");
+                }
+                
+                if (!state[SDL_SCANCODE_C]) {
+                    
+                }                
+                
+                if (!state[SDL_SCANCODE_V]) {
+                    
+                }
                 break;
 
             default:
