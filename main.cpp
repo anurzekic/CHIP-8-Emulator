@@ -276,8 +276,9 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 {
                     // TODO Handle quirks
                     uint8_t VX = get_VX(instance.opcode);
-                    instance.V[0xF] = (instance.V[VX] & 0x8000) >> 15;
+                    bool bit_value = instance.V[VX] >> 7;
                     instance.V[VX] = instance.V[VX] << 1;
+                    instance.V[0xF] = bit_value;
                 }
                     break;   
 
