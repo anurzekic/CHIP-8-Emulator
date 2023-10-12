@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stack>
+#include <SDL2/SDL.h>
 
 #define DISPLAY_WIDTH  64 // CHIP-8 default width
 #define DISPLAY_HEIGHT 32 // CHIP-8 default width
@@ -24,6 +25,13 @@ const static uint8_t FONT[80] = {
   0xE0, 0x90, 0x90, 0x90, 0xE0, // D
   0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
   0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+};
+
+const int key_mappings[16] = {
+  SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
+  SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
+  SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
+  SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V 
 };
 
 typedef enum 
@@ -74,7 +82,7 @@ class Chip8
     uint8_t  display[32][64];
 
     chip8_state_t state;
-  // public:
+
     Chip8();
     ~Chip8() = default;
 };
