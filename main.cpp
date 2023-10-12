@@ -234,14 +234,9 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                     uint8_t VX = get_VX(instance.opcode);
                     uint8_t VY = get_VY(instance.opcode);
 
-                    if(((uint16_t)instance.V[VX] + (uint16_t)instance.V[VY]) > 255) {
-                        instance.V[0xF] = 0x1;
-                    }
-                    else {
-                        instance.V[0xF] = 0x0;
-                    }
-
-                    instance.V[VX] = instance.V[VX] + instance.V[VY];
+                    uint16_t temp = (instance.V[VX] + instance.V[VY]);
+                    instance.V[VX] += instance.V[VY];
+                    instance.V[0xF] = (temp > 0xFF);
                 }
                     break;
 
@@ -249,21 +244,20 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 {
                     uint8_t VX = get_VX(instance.opcode);
                     uint8_t VY = get_VY(instance.opcode);
-                    if (instance.V[VX] > instance.V[VY]) {
-                        instance.V[0xF] = 0x1;
-                    }
-                    else {
-                        instance.V[0xF] = 0x0;
-                    }
-                    instance.V[VX] = instance.V[VX] - instance.V[VY];
+
+                    bool is_larger = instance.V[VX] > instance.V[VY];
+                    instance.V[VX] -= instance.V[VY];
+                    instance.V[0xF] = is_larger;
                 }
                     break;
 
                 case 0x6:
                 {
+                    // TODO Handle quirks
                     uint8_t VX = get_VX(instance.opcode);
-                    instance.V[0xF] = instance.V[VX] & 0x1;
+                    bool bit_value = instance.V[VX] & 0x1;
                     instance.V[VX] = instance.V[VX] >> 1;
+                    instance.V[0xF] = bit_value;
                 }
                     break;
 
@@ -272,18 +266,15 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                     uint8_t VX = get_VX(instance.opcode);
                     uint8_t VY = get_VY(instance.opcode);
                     
-                    if (instance.V[VY] > instance.V[VX]) {
-                        instance.V[0xF] = 0x1;
-                    }
-                    else {
-                        instance.V[0xF] = 0x0;
-                    }
+                    bool is_larger = instance.V[VY] > instance.V[VX]; 
                     instance.V[VX] = instance.V[VY] - instance.V[VX];
+                    instance.V[0xF] = is_larger;
                 }
                     break;
 
                 case 0xE:
                 {
+                    // TODO Handle quirks
                     uint8_t VX = get_VX(instance.opcode);
                     instance.V[0xF] = (instance.V[VX] & 0x8000) >> 15;
                     instance.V[VX] = instance.V[VX] << 1;
@@ -399,7 +390,19 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
 
                 // TODO Implement "Get key" instruction
                 case 0x0A:
+                {
+                    bool flag = false;
+                    for (int i = 0; i < 16; i++) {
+                        if (instance.keypad[i]) {
+                            instance.V[get_VX(instance.opcode)] = i;
+                            flag = true;
+                            break;
+                        }
+                    }
 
+                    if (!flag)
+                        instance.pc -= 2;
+                }
                     break;
 
                 case 0x15:
@@ -479,7 +482,8 @@ void handle_input(Chip8& instance, SDL_Event& event) {
                 if (state[SDL_SCANCODE_ESCAPE]) {
                     instance.state = QUIT; 
                 }
-                else if (state[SDL_SCANCODE_SPACE]) {
+                
+                if (state[SDL_SCANCODE_SPACE]) {
                     if (instance.state == PAUSED) {
                         instance.state = RUNNING;
                     } 
@@ -487,53 +491,69 @@ void handle_input(Chip8& instance, SDL_Event& event) {
                         instance.state = PAUSED;
                     }
                 }
-                else if (state[SDL_SCANCODE_1]) {
-
+                
+                if (state[SDL_SCANCODE_1]) {
+                    instance.keypad[0x1] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_2]) {
-                    
+                
+                if (state[SDL_SCANCODE_2]) {
+                    instance.keypad[0x2] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_3]) {
-                    
+                
+                if (state[SDL_SCANCODE_3]) {
+                    instance.keypad[0x3] = 0x1;
                 }                
-                else if (state[SDL_SCANCODE_4]) {
-                    
+                
+                if (state[SDL_SCANCODE_4]) {
+                    instance.keypad[0xC] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_Q]) {
-
+                
+                if (state[SDL_SCANCODE_Q]) {
+                    instance.keypad[0x4] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_W]) {
-                    
+                
+                if (state[SDL_SCANCODE_W]) {
+                    instance.keypad[0x5] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_E]) {
-                    
+                
+                if (state[SDL_SCANCODE_E]) {
+                    instance.keypad[0x6] = 0x1;
                 }                
-                else if (state[SDL_SCANCODE_R]) {
-                    
+                
+                if (state[SDL_SCANCODE_R]) {
+                    instance.keypad[0xD] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_A]) {
-
+                
+                if (state[SDL_SCANCODE_A]) {
+                    instance.keypad[0x7] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_S]) {
-
+                
+                if (state[SDL_SCANCODE_S]) {
+                    instance.keypad[0x8] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_D]) {
-                    
+                
+                if (state[SDL_SCANCODE_D]) {
+                    instance.keypad[0x9] = 0x1;
                 }                
-                else if (state[SDL_SCANCODE_F]) {
-                    
+                
+                if (state[SDL_SCANCODE_F]) {
+                    instance.keypad[0xE] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_Z]) {
-                    printf("PRESSED Y!\n");
+                
+                if (state[SDL_SCANCODE_Z]) {
+                    instance.keypad[0xA] = 0x1;
                 }
-                else if (state[SDL_SCANCODE_X]) {
-                    
+                
+                if (state[SDL_SCANCODE_X]) {
+                    instance.keypad[0x0] = 0x1;                    
                 }
-                else if (state[SDL_SCANCODE_C]) {
-                    
+                
+                if (state[SDL_SCANCODE_C]) {
+                    instance.keypad[0xB] = 0x1;
                 }                
-                else if (state[SDL_SCANCODE_V]) {
-                    
+                
+                if (state[SDL_SCANCODE_V]) {
+                    instance.keypad[0xF] = 0x1;
                 }         
                 // printf("Key press detected\n");
                 break;
@@ -541,67 +561,67 @@ void handle_input(Chip8& instance, SDL_Event& event) {
             case SDL_KEYUP:
                 printf("Key relesase detected\n");
                 if (!state[SDL_SCANCODE_1]) {
-
+                    instance.keypad[0x1] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_2]) {
-                    
+                    instance.keypad[0x2] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_3]) {
-                    
+                    instance.keypad[0x3] = 0x0;
                 }                
                 
                 if (!state[SDL_SCANCODE_4]) {
-                    
+                    instance.keypad[0xC] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_Q]) {
-
+                    instance.keypad[0x4] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_W]) {
-                    
+                    instance.keypad[0x5] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_E]) {
-                    
+                    instance.keypad[0x6] = 0x0;
                 }                
                 
                 if (!state[SDL_SCANCODE_R]) {
-                    
+                    instance.keypad[0xD] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_A]) {
-
+                    instance.keypad[0x7] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_S]) {
-
+                    instance.keypad[0x8] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_D]) {
-                    
+                    instance.keypad[0x9] = 0x0;
                 }                
                 
                 if (!state[SDL_SCANCODE_F]) {
-                    
+                    instance.keypad[0xE] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_Z]) {
-                    printf("RELEASED Y\n");
+                    instance.keypad[0xA] = 0x0;
                 }
                 
                 if (!state[SDL_SCANCODE_X]) {
-                    // printf("RELEASED X\n");
+                    instance.keypad[0x0] = 0x0;                    
                 }
                 
                 if (!state[SDL_SCANCODE_C]) {
-                    
+                    instance.keypad[0xB] = 0x0;
                 }                
                 
                 if (!state[SDL_SCANCODE_V]) {
-                    
+                    instance.keypad[0xF] = 0x0;
                 }
                 break;
 
