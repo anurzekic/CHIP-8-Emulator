@@ -422,9 +422,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 case 0x29:
                 {
                     // Multiply by 5 since every character is 5 bytes long
-                    uint8_t font_index = instance.V[get_VX(instance.opcode)] * 5;
-                    instance.I = instance.RAM[font_index];
-                    // printf("FONT INDEX: %u AND I: %x\n", font_index, instance.I);
+                    instance.I = instance.V[get_VX(instance.opcode)] * 5;
                 }
                     break;
 
