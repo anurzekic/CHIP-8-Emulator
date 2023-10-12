@@ -468,7 +468,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
 
 void handle_input(Chip8& instance, SDL_Event& event) {
     while (SDL_PollEvent(&event)) {
-        const Uint8* state = SDL_GetKeyboardState(NULL);
+        const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);
         
         switch (event.type) 
         {
@@ -478,11 +478,10 @@ void handle_input(Chip8& instance, SDL_Event& event) {
                 break;
 
             case SDL_KEYDOWN:
-                if (state[SDL_SCANCODE_ESCAPE]) {
+                if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
                     instance.state = QUIT; 
                 }
-                
-                if (state[SDL_SCANCODE_SPACE]) {
+                else if (keyboard_state[SDL_SCANCODE_SPACE]) {
                     if (instance.state == PAUSED) {
                         instance.state = RUNNING;
                     } 
@@ -490,145 +489,22 @@ void handle_input(Chip8& instance, SDL_Event& event) {
                         instance.state = PAUSED;
                     }
                 }
-                
-                if (state[SDL_SCANCODE_1]) {
-                    instance.keypad[0x1] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_2]) {
-                    instance.keypad[0x2] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_3]) {
-                    instance.keypad[0x3] = 0x1;
-                }                
-                
-                if (state[SDL_SCANCODE_4]) {
-                    instance.keypad[0xC] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_Q]) {
-                    instance.keypad[0x4] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_W]) {
-                    instance.keypad[0x5] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_E]) {
-                    instance.keypad[0x6] = 0x1;
-                }                
-                
-                if (state[SDL_SCANCODE_R]) {
-                    instance.keypad[0xD] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_A]) {
-                    instance.keypad[0x7] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_S]) {
-                    instance.keypad[0x8] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_D]) {
-                    instance.keypad[0x9] = 0x1;
-                }                
-                
-                if (state[SDL_SCANCODE_F]) {
-                    instance.keypad[0xE] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_Z]) {
-                    instance.keypad[0xA] = 0x1;
-                }
-                
-                if (state[SDL_SCANCODE_X]) {
-                    instance.keypad[0x0] = 0x1;                    
-                }
-                
-                if (state[SDL_SCANCODE_C]) {
-                    instance.keypad[0xB] = 0x1;
-                }                
-                
-                if (state[SDL_SCANCODE_V]) {
-                    instance.keypad[0xF] = 0x1;
-                }         
                 // printf("Key press detected\n");
                 break;
 
-            case SDL_KEYUP:
-                printf("Key relesase detected\n");
-                if (!state[SDL_SCANCODE_1]) {
-                    instance.keypad[0x1] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_2]) {
-                    instance.keypad[0x2] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_3]) {
-                    instance.keypad[0x3] = 0x0;
-                }                
-                
-                if (!state[SDL_SCANCODE_4]) {
-                    instance.keypad[0xC] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_Q]) {
-                    instance.keypad[0x4] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_W]) {
-                    instance.keypad[0x5] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_E]) {
-                    instance.keypad[0x6] = 0x0;
-                }                
-                
-                if (!state[SDL_SCANCODE_R]) {
-                    instance.keypad[0xD] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_A]) {
-                    instance.keypad[0x7] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_S]) {
-                    instance.keypad[0x8] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_D]) {
-                    instance.keypad[0x9] = 0x0;
-                }                
-                
-                if (!state[SDL_SCANCODE_F]) {
-                    instance.keypad[0xE] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_Z]) {
-                    instance.keypad[0xA] = 0x0;
-                }
-                
-                if (!state[SDL_SCANCODE_X]) {
-                    instance.keypad[0x0] = 0x0;                    
-                }
-                
-                if (!state[SDL_SCANCODE_C]) {
-                    instance.keypad[0xB] = 0x0;
-                }                
-                
-                if (!state[SDL_SCANCODE_V]) {
-                    instance.keypad[0xF] = 0x0;
-                }
-                break;
+            // case SDL_KEYUP:
+            //     printf("Key relesase detected\n");
+            //     break;
 
             default:
                 break;
         }
-    }
 
+        // Keypad has 16 keys        
+        for(uint i = 0; i < 16; i++) {
+            instance.keypad[i] = keyboard_state[key_mappings[i]];
+        }
+    }
 }
 
 void update_timers(Chip8& instance) {
