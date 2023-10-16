@@ -122,6 +122,7 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         case 0x0:
             if (instance.opcode == 0x00E0) {
                 printf("Clear screen!\n\n");
+                memset(&instance.display, 0x0, sizeof(instance.display));
                 clear_window(renderer, config);
                 instance.draw = true;
             }
@@ -252,7 +253,16 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 case 0x6:
                 {
                     // TODO Handle quirks
+                    // This is the non-CHIP-8 version
+                    // uint8_t VX = get_VX(instance.opcode);
+                    // bool bit_value = instance.V[VX] & 0x1;
+                    // instance.V[VX] = instance.V[VX] >> 1;
+                    // instance.V[0xF] = bit_value;
+
+                    // CHIP-8 Version
                     uint8_t VX = get_VX(instance.opcode);
+                    // uint8_t VY = get_VY(instance.opcode);
+                    // instance.V[VX] = instance.V[VY];
                     bool bit_value = instance.V[VX] & 0x1;
                     instance.V[VX] = instance.V[VX] >> 1;
                     instance.V[0xF] = bit_value;
@@ -273,8 +283,18 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 case 0xE:
                 {
                     // TODO Handle quirks
+                    // This is the non-CHIP-8 version
+                    // uint8_t VX = get_VX(instance.opcode);
+                    // bool bit_value = instance.V[VX] >> 7;
+                    // instance.V[VX] = instance.V[VX] << 1;
+                    // instance.V[0xF] = bit_value;
+
+                    // CHIP-8 Version
                     uint8_t VX = get_VX(instance.opcode);
-                    bool bit_value = instance.V[VX] >> 7;
+                    // uint8_t VY = get_VY(instance.opcode);
+                    // instance.V[VX] = instance.V[VY];
+
+                    bool bit_value = (instance.V[VX] & 0x80) >> 7;
                     instance.V[VX] = instance.V[VX] << 1;
                     instance.V[0xF] = bit_value;
                 }
@@ -312,8 +332,8 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
 
         case 0xD:
         {
-            uint8_t x = instance.V[(instance.opcode & 0x0F00) >> 8] % 64; // The scaling factor should be used here in some way
-            uint8_t y = instance.V[(instance.opcode & 0x00F0) >> 4] % 32; // Here as well
+            uint8_t x = instance.V[(instance.opcode & 0x0F00) >> 8] % DISPLAY_WIDTH; // The scaling factor should be used here in some way
+            uint8_t y = instance.V[(instance.opcode & 0x00F0) >> 4] % DISPLAY_HEIGHT; // Here as well
 
             instance.V[0xF] = 0;
 
@@ -326,14 +346,14 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
 
             for(size_t i = instance.I; i < instance.I + sprite_height; i++) {
                 // printf("\nNext row!\n");
-                if (y == DISPLAY_HEIGHT)
+                if (y >= DISPLAY_HEIGHT)
                     break;
 
                 // printf("Value at I in RAM is: %x and decimal %d\n\n", instance.RAM[i], instance.RAM[i]);
                 uint8_t x_for_current_row = x;
 
                 for(int shift_by = 8; shift_by > 0; shift_by--) {
-                    if (x_for_current_row == DISPLAY_WIDTH) 
+                    if (x_for_current_row >= DISPLAY_WIDTH) 
                         break;
 
                     bool x_bit_value = (instance.RAM[i] >> (shift_by - 1)) & 0x1;
@@ -428,10 +448,20 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 {
                     uint8_t value = instance.V[get_VX(instance.opcode)];
                     printf("Decimal conversion instruction HEX: %x | DECIMAL: %u | \n", value, value);
-                    instance.RAM[instance.I] = (value / 100) % 10;
-                    instance.RAM[instance.I + 1] = (value / 10) % 10;
                     instance.RAM[instance.I + 2] = value % 10;
+                    value /= 10;
+                    instance.RAM[instance.I + 1] = value % 10;
+                    value /= 10;
+                    instance.RAM[instance.I] = value;
                     printf("F: %u | S: %u | T: %u\n", instance.RAM[instance.I], instance.RAM[instance.I + 1], instance.RAM[instance.I + 2]);
+
+
+                    // uint8_t value = instance.V[get_VX(instance.opcode)];
+                    // printf("Decimal conversion instruction HEX: %x | DECIMAL: %u | \n", value, value);
+                    // instance.RAM[instance.I] = (value / 100) % 10;
+                    // instance.RAM[instance.I + 1] = (value / 10) % 10;
+                    // instance.RAM[instance.I + 2] = value % 10;
+                    // printf("F: %u | S: %u | T: %u\n", instance.RAM[instance.I], instance.RAM[instance.I + 1], instance.RAM[instance.I + 2]);
                 }
                     break;
 
@@ -440,13 +470,17 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                     for(uint8_t i = 0x0; i <= get_VX(instance.opcode); i++) {
                         instance.RAM[instance.I + i] = instance.V[i]; 
                     }
+                    // TODO Make it so it can be toggled
+                    // instance.I += get_VX(instance.opcode) + 1; // Original CHIP-8 behaviour                    break;
                     break;
-                    
+
                 case 0x65:
                     // TODO Implement other behaviour for older CHIP8 games
                     for(uint8_t i = 0x0; i <= get_VX(instance.opcode); i++) {
                         instance.V[i] = instance.RAM[instance.I + i]; 
                     }
+                    // TODO Make it so it can be toggled
+                    // instance.I += get_VX(instance.opcode) + 1; // Original CHIP-8 behaviour
                     break;
                 
                 default:
