@@ -4,6 +4,7 @@
 #include "./include/chip8.h"
 #include <assert.h>
 #include <cstdlib>
+#include <time.h>
 
 bool init_SDL() { //, SDL_Window *window, SDL_Renderer *renderer) {
     if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0) { 
@@ -94,8 +95,6 @@ void init_chip8(Chip8& instance, const char* filename) {
     fread(&instance.RAM[0x200], sizeof(instance.RAM), 1, file);
     instance.pc = 0x200;
 
-    memset(instance.V, 0, sizeof(instance.V));
-
     printf("PC: %d ", instance.pc);
 
     for(int i = 1; i < 4096; i+=2)
@@ -182,7 +181,6 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
         }
             // printf("Setting register: %x to %x\n", (instance.opcode & 0x0F00) >> 8, instance.opcode & 0x00FF);
             printf("The current value at register: %x is: %x\n\n", (instance.opcode & 0x0F00) >> 8, instance.V[(instance.opcode & 0x0F00) >> 8]);
-            
             break;
         
         case 0x7:
@@ -392,16 +390,16 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
                 // TODO Implement "Get key" instruction
                 case 0x0A:
                 {
-                    bool flag = false;
-                    for (int i = 0; i < 16; i++) {
+                    bool is_key_pressed = false;
+                    for (int i = 0; i < (int)sizeof(instance.keypad); i++) {
                         if (instance.keypad[i]) {
                             instance.V[get_VX(instance.opcode)] = i;
-                            flag = true;
+                            is_key_pressed = true;
                             break;
                         }
                     }
 
-                    if (!flag)
+                    if (!is_key_pressed)
                         instance.pc -= 2;
                 }
                     break;
@@ -461,10 +459,6 @@ void fetch_instruction(Chip8& instance, SDL_Renderer *renderer, [[maybe_unused]]
             break;
     }
 }
-
-// void decode_instruction(Chip8& instance) {
-//     (void*)instance;
-// }
 
 void handle_input(Chip8& instance, SDL_Event& event) {
     while (SDL_PollEvent(&event)) {
@@ -554,6 +548,7 @@ int main(int argc, char const *argv[])
     
     clear_window(renderer, config);
 
+    // srand(time(NULL)); // 
     init_chip8(chip8_instance, argv[1]);
     chip8_instance.instr_per_sec = 700;
 
